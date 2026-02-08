@@ -1,22 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-XHH0Z0H74J"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-XHH0Z0H74J');
-</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chronos Elite</title>
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XHH0Z0H74J"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XHH0Z0H74J');
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --neon-primary: #ffffff; 
+            --neon-primary: #ffffff;
             --space-bg: #020205;
             --glass: rgba(128, 128, 128, 0.15);
             --glow-strength: 20px;
@@ -256,8 +259,9 @@
 <body>
 
     <div class="utility-bar">
-        <button class="btn-icon" onclick="toggleFullscreen()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+        <button class="btn-icon" onclick="toggleFullscreen()" id="fsBtn">
+            <svg id="expandIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+            <svg id="collapseIcon" style="display:none;" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg>
         </button>
     </div>
 
@@ -437,6 +441,18 @@
                 document.documentElement.style.setProperty('--glow-strength', `${val}px`);
                 document.documentElement.style.setProperty('--glow-particle', `${val / 2.5}px`);
             });
+
+            document.addEventListener('fullscreenchange', () => {
+                const expand = document.getElementById('expandIcon');
+                const collapse = document.getElementById('collapseIcon');
+                if (document.fullscreenElement) {
+                    expand.style.display = 'none';
+                    collapse.style.display = 'block';
+                } else {
+                    expand.style.display = 'block';
+                    collapse.style.display = 'none';
+                }
+            });
         }
 
         function draw() {
@@ -452,13 +468,11 @@
         function togglePlay() {
             const mainBtn = document.getElementById('mainBtn');
             if (isRunning) {
-                // Currently playing, so we pause it
                 isRunning = false;
                 clearInterval(timerInt);
                 remaining = Math.ceil((targetTime - Date.now()) / 1000);
                 mainBtn.innerText = 'Resume';
             } else {
-                // Currently paused or not started, so we start/resume it
                 let s = remaining !== null ? remaining : (timeState.hr * 3600 + timeState.min * 60 + timeState.sec);
                 if (s <= 0) return;
                 targetTime = Date.now() + s * 1000;
@@ -484,8 +498,13 @@
         }
 
         function toggleFullscreen() {
-            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-            else document.exitFullscreen();
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(e => {
+                    console.error("Fullscreen error:", e);
+                });
+            } else {
+                document.exitFullscreen();
+            }
         }
 
         let idleTimer;
